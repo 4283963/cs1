@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { Upload, ImagePlus, X } from 'lucide-vue-next'
 
 const file = defineModel<File | null>({ default: null })
@@ -10,16 +10,25 @@ const previewUrl = ref('')
 
 const isImage = (f: File) => f.type.startsWith('image/')
 
+function setPreview(f: File | null) {
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+  previewUrl.value = f ? URL.createObjectURL(f) : ''
+}
+
 function handleFiles(files: FileList | null) {
   if (!files || files.length === 0) return
   const f = files[0]
   if (!isImage(f)) return
   file.value = f
+  setPreview(f)
 }
 
 function onInputChange(e: Event) {
   const target = e.target as HTMLInputElement
   handleFiles(target.files)
+  target.value = ''
 }
 
 function onDrop(e: DragEvent) {
@@ -29,15 +38,12 @@ function onDrop(e: DragEvent) {
 
 function clear() {
   file.value = null
+  setPreview(null)
   if (inputRef.value) inputRef.value.value = ''
 }
 
-watch(file, (f) => {
-  if (previewUrl.value) {
-    URL.revokeObjectURL(previewUrl.value)
-    previewUrl.value = ''
-  }
-  if (f) previewUrl.value = URL.createObjectURL(f)
+onBeforeUnmount(() => {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
 })
 
 const fileSize = computed(() => {
