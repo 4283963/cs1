@@ -15,11 +15,13 @@ import PositionSelector from '@/components/PositionSelector.vue'
 import TechFields from '@/components/TechFields.vue'
 import DesignFields from '@/components/DesignFields.vue'
 import AvatarUploader from '@/components/AvatarUploader.vue'
+import ResumeUploader from '@/components/ResumeUploader.vue'
 import { useStaffForm } from '@/composables/useStaffForm'
 
 const {
   form,
   avatarFile,
+  resumeFile,
   errors,
   submitting,
   submitError,
@@ -38,7 +40,7 @@ async function handleSubmit() {
 
 <template>
   <div class="min-h-screen px-4 py-10 sm:py-14">
-    <div class="mx-auto w-full max-w-2xl">
+    <div class="mx-auto w-full max-w-3xl">
       <header class="mb-7">
         <span
           class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700"
@@ -225,9 +227,18 @@ async function handleSubmit() {
 
         <section>
           <h2 class="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-zinc-400">
-            个人头像
+            附件上传
           </h2>
-          <AvatarUploader v-model="avatarFile" />
+          <div class="space-y-5">
+            <div>
+              <h3 class="mb-2 text-sm font-medium text-zinc-700">个人头像</h3>
+              <AvatarUploader v-model="avatarFile" />
+            </div>
+            <div>
+              <h3 class="mb-2 text-sm font-medium text-zinc-700">PDF 简历</h3>
+              <ResumeUploader v-model="resumeFile" />
+            </div>
+          </div>
         </section>
 
         <div

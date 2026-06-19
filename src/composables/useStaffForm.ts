@@ -21,6 +21,7 @@ function createInitialState(): StaffFormState {
 export function useStaffForm() {
   const form = reactive<StaffFormState>(createInitialState())
   const avatarFile = ref<File | null>(null)
+  const resumeFile = ref<File | null>(null)
   const submitting = ref(false)
   const submitError = ref('')
   const submittedId = ref('')
@@ -74,6 +75,9 @@ export function useStaffForm() {
     if (avatarFile.value) {
       fd.append('avatar', avatarFile.value)
     }
+    if (resumeFile.value) {
+      fd.append('resume', resumeFile.value)
+    }
     return fd
   }
 
@@ -106,6 +110,7 @@ export function useStaffForm() {
   function reset() {
     Object.assign(form, createInitialState())
     avatarFile.value = null
+    resumeFile.value = null
     submitError.value = ''
     submittedId.value = ''
     Object.keys(errors).forEach((k) => delete errors[k])
@@ -116,6 +121,7 @@ export function useStaffForm() {
   return {
     form,
     avatarFile,
+    resumeFile,
     errors,
     submitting,
     submitError,

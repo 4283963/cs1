@@ -12,6 +12,7 @@ export interface StaffRecord {
   portfolio?: string
   styles?: string[]
   avatarPath?: string
+  resumePath?: string
   createdAt: string
 }
 

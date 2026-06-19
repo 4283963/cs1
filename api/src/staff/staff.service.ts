@@ -6,6 +6,8 @@ import type { Position, StaffRecord, SubmitResult } from './staff.types'
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE_RE = /^1[3-9]\d{9}$/
 const IMAGE_MIME = /^image\//
+const PDF_MIME = /^application\/pdf$/
+
 
 interface FieldErrors {
   [key: string]: string
@@ -29,13 +31,14 @@ export class StaffService {
 
   async submit(
     body: Record<string, string>,
-    file?: Express.Multer.File,
+    avatarFile?: Express.Multer.File,
+    resumeFile?: Express.Multer.File,
   ): Promise<SubmitResult> {
     const position = body.position as Position
     const techStack = parseArray(body.techStack)
     const styles = parseArray(body.styles)
 
-    const errors = this.validate(body, position, techStack, styles, file)
+    const errors = this.validate(body, position, techStack, styles, avatarFile, resumeFile)
     if (Object.keys(errors).length > 0) {
       throw new BadRequestException({ message: '校验失败', errors })
     }
@@ -62,11 +65,17 @@ export class StaffService {
       record.styles = styles
     }
 
-    if (file) {
-      const ext = (file.originalname.split('.').pop() || 'png').toLowerCase()
+    if (avatarFile) {
+      const ext = (avatarFile.originalname.split('.').pop() || 'png').toLowerCase()
       const filename = `${id}-avatar.${ext}`
-      await fs.writeFile(join(this.uploadsDir, filename), file.buffer)
+      await fs.writeFile(join(this.uploadsDir, filename), avatarFile.buffer)
       record.avatarPath = `/uploads/${filename}`
+    }
+
+    if (resumeFile) {
+      const filename = `${id}-resume.pdf`
+      await fs.writeFile(join(this.uploadsDir, filename), resumeFile.buffer)
+      record.resumePath = `/uploads/${filename}`
     }
 
     await this.appendRecord(record)
@@ -78,7 +87,8 @@ export class StaffService {
     position: Position | undefined,
     techStack: string[],
     styles: string[],
-    file?: Express.Multer.File,
+    avatarFile?: Express.Multer.File,
+    resumeFile?: Express.Multer.File,
   ): FieldErrors {
     const errors: FieldErrors = {}
 
@@ -105,8 +115,11 @@ export class StaffService {
       if (styles.length === 0) errors.styles = '请至少选择一项擅长风格'
     }
 
-    if (file && !IMAGE_MIME.test(file.mimetype)) {
+    if (avatarFile && !IMAGE_MIME.test(avatarFile.mimetype)) {
       errors.avatar = '头像仅限图片格式'
+    }
+    if (resumeFile && !PDF_MIME.test(resumeFile.mimetype)) {
+      errors.resume = '简历仅限 PDF 格式'
     }
 
     return errors
